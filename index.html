@@ -1,0 +1,615 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>te amo zoe</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos de interfaz -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rose-pastel': '#ffd1dc',
+                        'rose-soft': '#fbcfe8',
+                        'rose-accent': '#f472b6',
+                        'rose-deep': '#db2777',
+                        'cream-soft': '#fdfbf7',
+                        'cream-paper': '#fffdf9',
+                        'gold-soft': '#fef08a',
+                        'gold-accent': '#d97706',
+                    },
+                    fontFamily: {
+                        'handwriting': ['Caveat', 'cursive'],
+                        'script': ['Dancing Script', 'cursive'],
+                        'vibes': ['Great Vibes', 'cursive'],
+                        'sans-cute': ['Quicksand', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Ambientación Pinterest / TikTok */
+        body {
+            background: linear-gradient(135deg, #fdfbf7 0%, #fce7f3 50%, #ffd1dc 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        /* Canvas para partículas */
+        #canvas-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Sobre e interacción */
+        .envelope-wrapper {
+            perspective: 1000px;
+        }
+
+        .envelope {
+            position: relative;
+            width: 310px;
+            height: 220px;
+            background-color: #fce7f3;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(219, 39, 119, 0.12), 0 5px 15px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        }
+
+        @media (min-width: 640px) {
+            .envelope {
+                width: 400px;
+                height: 260px;
+            }
+        }
+
+        .envelope:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 22px 45px rgba(219, 39, 119, 0.22);
+        }
+
+        /* Solapa superior del sobre */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 125px;
+            background-color: #fbcfe8;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.3s ease;
+            z-index: 5;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        @media (min-width: 640px) {
+            .envelope-flap {
+                height: 150px;
+            }
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        /* Sello de Cera Estético */
+        .wax-seal {
+            position: absolute;
+            top: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 68px;
+            height: 68px;
+            background: radial-gradient(circle, #f472b6 0%, #db2777 70%, #9d174d 100%);
+            border: 1.5px solid #fef08a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fffdf9;
+            box-shadow: 0 4px 12px rgba(219, 39, 119, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+            z-index: 6;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        @media (min-width: 640px) {
+            .wax-seal {
+                top: 115px;
+                width: 76px;
+                height: 76px;
+            }
+        }
+
+        .envelope.open .wax-seal {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.4);
+            pointer-events: none;
+        }
+
+        /* Listón / Cinta decorativa */
+        .ribbon-horizontal {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(244, 114, 182, 0.5), rgba(255,255,255,0.6));
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+
+        .ribbon-vertical {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(244, 114, 182, 0.5), rgba(255,255,255,0.6));
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Washi tape decorativo */
+        .washi-tape {
+            position: absolute;
+            width: 95px;
+            height: 28px;
+            background: rgba(254, 205, 211, 0.75);
+            backdrop-filter: blur(2px);
+            border: 1px dashed rgba(244, 114, 182, 0.4);
+            z-index: 20;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .washi-tape-right {
+            transform: rotate(6deg);
+            right: 25px;
+            top: -12px;
+        }
+
+        .washi-tape-left {
+            transform: rotate(-8deg);
+            left: 25px;
+            top: -12px;
+        }
+
+        /* Textura de la hoja de papel */
+        .letter-paper {
+            background-color: #fffdf9;
+            background-image: 
+                radial-gradient(#f472b6 0.4px, transparent 0.4px), 
+                radial-gradient(#f472b6 0.4px, #fffdf9 0.4px);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+            box-shadow: 0 15px 40px rgba(219, 39, 119, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Fina línea rosa vertical a la izquierda */
+        .pink-margin-line {
+            border-left: 1.5px solid #f472b6;
+        }
+
+        /* Destellos animados */
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(10deg); }
+        }
+
+        .sparkle-symbol {
+            display: inline-block;
+            animation: sparkle 3s infinite ease-in-out;
+        }
+
+        /* Modales personalizados */
+        .custom-modal {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .custom-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start min-h-screen p-3 sm:p-6 md:p-10 relative text-gray-700 select-none no-scrollbar">
+
+    <!-- Canvas para Partículas de Kaomojis y Símbolos -->
+    <canvas id="canvas-particles"></canvas>
+
+    <!-- Reproductor de Música Flotante (Web Audio API) -->
+    <div class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur-md border border-pink-200 px-3 py-2 rounded-full shadow-lg flex items-center gap-2.5 text-xs sm:text-sm text-pink-600 transition-all hover:bg-white hover:shadow-pink-200/50">
+        <button id="btn-music" onclick="toggleMusic()" class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 hover:bg-pink-200 transition-colors focus:outline-none shadow-inner">
+            <i id="music-icon" class="fa-solid fa-music text-xs"></i>
+        </button>
+        <span id="music-label" class="font-sans-cute font-medium hidden xs:inline pr-1 text-pink-500">𔘓 música suave 𓂅</span>
+    </div>
+
+    <!-- PANTALLA INICIAL: SOBRE INTERACTIVO -->
+    <div id="envelope-container" class="flex flex-col items-center justify-center min-h-[85vh] w-full z-20 transition-all duration-700">
+        
+        <div class="text-center mb-6 animate-bounce">
+            <span class="text-xs tracking-wider text-pink-600 font-sans-cute font-medium bg-white/80 px-4 py-1.5 rounded-full border border-pink-200 shadow-sm backdrop-blur-sm">
+                𓍯 𔘓 te amo zoe 𔘓 𓍯
+            </span>
+        </div>
+
+        <!-- Componente Sobre -->
+        <div class="envelope-wrapper">
+            <div id="envelope" class="envelope flex items-center justify-center" onclick="openLetter()">
+                <div class="ribbon-horizontal"></div>
+                <div class="ribbon-vertical"></div>
+                <div class="envelope-flap"></div>
+                <div class="wax-seal">
+                    <span class="font-sans-cute text-[10px] sm:text-[11px] font-bold text-center leading-tight">𔘓 te amo zoe 𔘓</span>
+                </div>
+                <div class="text-center p-4 z-10 mt-10 sm:mt-12">
+                    <p class="font-handwriting text-2xl sm:text-3xl text-pink-600 tracking-wide font-bold drop-shadow-sm">
+                        ꒰ para mi niña bonita ꒱»
+                    </p>
+                    <p class="text-xs text-pink-400 font-sans-cute mt-1">✧ toca para abrir ✦</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="mt-8 text-xs text-pink-500 font-sans-cute italic animate-pulse">
+            ૮ ˙Ⱉ˙ ა toca el sello para abrir con amoor 𖹭
+        </p>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL: CONTENIDO CORTÉS -->
+    <main id="letter-content" class="hidden w-full max-w-2xl mx-auto z-20 my-4 sm:my-8 transition-all duration-1000 opacity-0">
+        
+        <!-- Tarjeta de Hoja de Papel Vintage / Aesthetic -->
+        <div class="letter-paper relative rounded-2xl p-6 sm:p-10 md:p-12 border border-pink-200/70 my-4">
+            
+            <!-- Detalles Decorativos Washi Tape -->
+            <div class="washi-tape washi-tape-left"></div>
+            <div class="washi-tape washi-tape-right"></div>
+
+            <!-- Símbolos Decorativos en las Esquinas -->
+            <div class="absolute top-4 left-4 text-pink-400 text-sm sparkle-symbol">𔘓</div>
+            <div class="absolute top-5 right-6 text-pink-300 text-xs sparkle-symbol" style="animation-delay: 1s;">✧</div>
+            <div class="absolute bottom-5 left-6 text-pink-400 text-xs sparkle-symbol" style="animation-delay: 1.5s;">𓂅</div>
+            <div class="absolute bottom-4 right-5 text-pink-400 text-sm sparkle-symbol" style="animation-delay: 0.5s;">𖹭</div>
+
+            <!-- Encabezado / Título -->
+            <header class="text-center mb-8 sm:mb-10">
+                <div class="flex items-center justify-center gap-2 mb-2 text-pink-400 text-xs tracking-widest">
+                    <span>✧</span><span>𔘓</span><span>ʚɞ</span><span>𔘓</span><span>✧</span>
+                </div>
+                <h1 class="font-handwriting text-3xl sm:text-4xl md:text-5xl text-pink-600 font-bold tracking-wide drop-shadow-sm">
+                    ꒰ para mi niña bonita ꒱»
+                </h1>
+                <p class="font-script text-2xl sm:text-3xl text-pink-400 mt-2 font-semibold">
+                    te amo zoe
+                </p>
+                <div class="w-32 h-0.5 bg-gradient-to-r from-transparent via-pink-300 to-transparent mx-auto mt-3 rounded-full"></div>
+            </header>
+
+            <!-- Cuerpo del Texto con Línea Rosa Vertical Fina -->
+            <article class="relative pl-5 sm:pl-8 pink-margin-line my-6 text-gray-800">
+                
+                <div class="font-handwriting text-2xl sm:text-3xl leading-relaxed sm:leading-loose space-y-6 text-gray-700">
+                    
+                    <p>
+                        Hola amoorr, queria hacerte esta carta para demostrar mis sentimientos y que sepas lo mucho que te amooo, me siento muy feliz de estar en tu vida y amoorrr ayer me dijiste que te sentias raraaaa y no sée, creo q una carta de quien amas puede ayudarrr, noo?
+                    </p>
+
+                    <p>
+                        Bueno amoorr espero que sii porq eres una niña muy bonita y amable y sinceramente estoy demasiado feliz de ser tu novia oficial aca formal aca rial no feik porq siento que asi puedo demostrarte mas amoor y tengo un lugar especiall, y aunq nuestra "pedida de novias" no fue tan aca chicas romanticas, pues yo quiero confesarte que me gustas muchooo yyy que eres con quien quiero estar el resto de mi vida, pechochaaa
+                    </p>
+
+                </div>
+
+            </article>
+
+            <!-- Despedida & Firma -->
+            <footer class="mt-10 pt-6 border-t border-pink-100 flex flex-col items-end">
+                <p class="font-vibes text-3xl sm:text-4xl text-pink-500">Siempre tuya,</p>
+                <p class="font-handwriting text-2xl text-pink-400 mt-1">te amo zoe 𓂅 ᰔ</p>
+            </footer>
+
+            <!-- Botones Interactivos de Amor -->
+            <section class="mt-10 pt-6 border-t border-dashed border-pink-200 flex flex-col gap-3 sm:gap-4 items-center">
+                <p class="font-sans-cute text-xs text-pink-400 tracking-widest font-medium mb-1">
+                    ✧ ֶָ֢ detalles para ti ֶָ֢ ✧
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                    <!-- Botón 1: Abracito Virtual -->
+                    <button onclick="triggerHugModal()" class="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-600 font-sans-cute text-xs sm:text-sm py-3 px-4 rounded-xl shadow-sm transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <span>૮ ˙Ⱉ˙ ა ¡Abracito virtual!</span>
+                    </button>
+
+                    <!-- Botón 2: Lluvia de Amor -->
+                    <button onclick="triggerHeartShower()" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-sans-cute text-xs sm:text-sm py-3 px-4 rounded-xl shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <span>𔘓 Lluvia de amoor 𖹭</span>
+                    </button>
+                </div>
+
+                <!-- Botón 3: Vale por un detalle -->
+                <button onclick="triggerCouponModal()" class="w-full sm:w-auto bg-white hover:bg-pink-50 border border-pink-300 text-pink-500 font-sans-cute text-xs py-2.5 px-6 rounded-full transition-all shadow-sm flex items-center justify-center gap-2 mt-1">
+                    <span>₍ᐢ. .ᐢ₎ Cuponcito de amor ʚɞ</span>
+                </button>
+            </section>
+
+        </div>
+
+        <!-- Firma final decorativa -->
+        <div class="text-center mt-6 mb-12">
+            <p class="font-handwriting text-2xl text-pink-500 font-semibold">te amo zoe 𔘓 ֹ 𓂅</p>
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: Abracito Virtual -->
+    <div id="modal-hug" class="custom-modal fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-pink-100 relative transform transition-all scale-95">
+            <div class="text-2xl text-pink-500 font-handwriting mb-3">૮ ˙Ⱉ˙ ა</div>
+            <h3 class="font-handwriting text-3xl text-pink-600 font-bold mb-2">¡Abracito Virtual!</h3>
+            <p class="font-sans-cute text-sm text-gray-600 mb-6 leading-relaxed">
+                Cierra los ojos por 5 segundos... imagíname abrazándote muy fuerte, calentito y sin soltarte, Zoe pechocha. 𔘓 𓂅
+            </p>
+            <button onclick="closeModal('modal-hug')" class="bg-pink-500 text-white font-sans-cute text-xs py-2.5 px-6 rounded-full hover:bg-pink-600 transition-colors shadow-sm">
+                Recibido con amor 𖹭
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Cupones Interactivos de Amor -->
+    <div id="modal-coupon" class="custom-modal fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+        <div class="bg-cream-paper rounded-2xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl border-2 border-dashed border-pink-300 relative">
+            <div class="text-xs font-sans-cute text-pink-400 tracking-widest mb-1">𓍯 CUPONCITOS PARA ZOE 𓍯</div>
+            <h3 class="font-handwriting text-3xl text-pink-600 font-bold mb-4">Elige tu cuponcito de hoy 𖹭</h3>
+            
+            <div class="space-y-3 text-left mb-6 font-sans-cute text-xs">
+                <div onclick="selectCoupon('Vale por mil besitos 💋𔘓')" class="p-3 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-xl cursor-pointer transition-colors flex items-center justify-between">
+                    <span class="text-pink-600 font-medium">✦ Vale por mil besitos</span>
+                    <span class="text-pink-400">ʚɞ</span>
+                </div>
+                <div onclick="selectCoupon('Vale por una cita romantica 🥂𖹭')" class="p-3 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-xl cursor-pointer transition-colors flex items-center justify-between">
+                    <span class="text-pink-600 font-medium">✦ Vale por una cita romántica</span>
+                    <span class="text-pink-400">𓂅</span>
+                </div>
+                <div onclick="selectCoupon('Vale por abrazos infinitos 🧸ᰔ')" class="p-3 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-xl cursor-pointer transition-colors flex items-center justify-between">
+                    <span class="text-pink-600 font-medium">✦ Vale por abrazos infinitos</span>
+                    <span class="text-pink-400">૮ ˙Ⱉ˙ ა</span>
+                </div>
+            </div>
+
+            <div id="coupon-result" class="hidden p-3 bg-white border border-pink-300 rounded-xl mb-4 text-pink-600 font-handwriting text-2xl font-bold"></div>
+
+            <button onclick="closeModal('modal-coupon')" class="bg-pink-400 text-white font-sans-cute text-xs py-2.5 px-6 rounded-full hover:bg-pink-500 transition-colors shadow-sm">
+                Guardar en el corazón ♡
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // -------------------------------------------------------------
+        // REVELADO Y ANIMACIÓN DEL SOBRE
+        // -------------------------------------------------------------
+        function openLetter() {
+            const envelope = document.getElementById('envelope');
+            const envelopeContainer = document.getElementById('envelope-container');
+            const letterContent = document.getElementById('letter-content');
+
+            envelope.classList.add('open');
+            startRomanticMusic();
+            triggerHeartShower();
+
+            setTimeout(() => {
+                envelopeContainer.classList.add('opacity-0');
+                setTimeout(() => {
+                    envelopeContainer.classList.add('hidden');
+                    letterContent.classList.remove('hidden');
+                    setTimeout(() => {
+                        letterContent.classList.remove('opacity-0');
+                    }, 50);
+                }, 700);
+            }, 1000);
+        }
+
+        // -------------------------------------------------------------
+        // SINTETIZADOR WEB AUDIO API (MELODÍA SUAVE ESTILO CAJITA DE MÚSICA)
+        // -------------------------------------------------------------
+        let audioCtx = null;
+        let isPlaying = false;
+        let melodyInterval = null;
+
+        function startRomanticMusic() {
+            if (isPlaying) return;
+            
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                isPlaying = true;
+                document.getElementById('music-icon').className = "fa-solid fa-pause text-xs";
+                
+                const notes = [261.63, 329.63, 392.00, 493.88, 523.25, 493.88, 392.00, 329.63];
+                let noteIndex = 0;
+
+                melodyInterval = setInterval(() => {
+                    if (!isPlaying || !audioCtx) return;
+                    
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.07, audioCtx.currentTime + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.2);
+
+                    noteIndex = (noteIndex + 1) % notes.length;
+                }, 420);
+
+            } catch (e) {
+                console.log("Web Audio API no disponible");
+            }
+        }
+
+        function stopRomanticMusic() {
+            if (melodyInterval) clearInterval(melodyInterval);
+            if (audioCtx) audioCtx.close();
+            isPlaying = false;
+            document.getElementById('music-icon').className = "fa-solid fa-music text-xs";
+        }
+
+        function toggleMusic() {
+            if (isPlaying) {
+                stopRomanticMusic();
+            } else {
+                startRomanticMusic();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // MODALES Y SELECCIÓN DE CUPONES
+        // -------------------------------------------------------------
+        function triggerHugModal() {
+            document.getElementById('modal-hug').classList.add('active');
+            triggerHeartShower();
+        }
+
+        function triggerCouponModal() {
+            document.getElementById('coupon-result').classList.add('hidden');
+            document.getElementById('modal-coupon').classList.add('active');
+            triggerHeartShower();
+        }
+
+        function selectCoupon(couponText) {
+            const res = document.getElementById('coupon-result');
+            res.innerText = `¡Canjeado! ${couponText}`;
+            res.classList.remove('hidden');
+            triggerHeartShower();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // -------------------------------------------------------------
+        // CANVAS DE PARTÍCULAS (UNICODE / KAOMOJIS)
+        // -------------------------------------------------------------
+        const canvas = document.getElementById('canvas-particles');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const symbolsList = ['𔘓', '♡', '𓂅', '𖹭', '✧', 'ʚɞ', 'ᰔ', '✦', 'ֶָ֢', '˚'];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, isBurst = false) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || (isBurst ? y : canvas.height + 20);
+                this.size = Math.random() * 10 + 12;
+                this.speedY = isBurst ? (Math.random() - 0.7) * 5 : - (Math.random() * 1.2 + 0.4);
+                this.speedX = isBurst ? (Math.random() - 0.5) * 5 : (Math.random() - 0.5) * 0.8;
+                this.opacity = Math.random() * 0.6 + 0.35;
+                this.symbol = symbolsList[Math.floor(Math.random() * symbolsList.length)];
+                this.color = ['#f472b6', '#fbcfe8', '#db2777', '#f472b6', '#d97706'][Math.floor(Math.random() * 5)];
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                ctx.font = `${this.size}px "Quicksand", sans-serif`;
+                ctx.fillText(this.symbol, this.x, this.y);
+                ctx.restore();
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+
+                if (this.y < -20) {
+                    this.y = canvas.height + 20;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(Math.floor(window.innerWidth / 30), 30);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle) => {
+                particle.update();
+                particle.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        function triggerHeartShower() {
+            for (let i = 0; i < 30; i++) {
+                const p = new Particle(window.innerWidth / 2, window.innerHeight / 2, true);
+                particles.push(p);
+            }
+            setTimeout(() => {
+                if (particles.length > 40) {
+                    particles.splice(30, particles.length - 30);
+                }
+            }, 3000);
+        }
+
+        window.onload = function() {
+            initParticles();
+            animateParticles();
+        };
+    </script>
+</body>
+</html>
